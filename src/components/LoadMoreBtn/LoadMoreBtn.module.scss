@@ -1,14 +1,8 @@
-.button_cont {
-    display: flex;
-    justify-content: center;
-    padding: 1.25em;
-
-    button {
-        padding: .75rem 1.5rem;
-        font-size: 1.25em;
-        border: none;
-        background-color: blue;
-        color: #fff;
-        cursor: pointer;
-    }
+.button {
+    padding: .75rem 1.5rem;
+    font-size: 1.25em;
+    border: none;
+    background-color: blue;
+    color: #fff;
+    cursor: pointer;
 }

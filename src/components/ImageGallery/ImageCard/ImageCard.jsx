@@ -1,10 +1,16 @@
 import css from "./ImageCard.module.scss";
 
-function ImageCard({ item }) {
-  const {urls, description} = item;
+function ImageCard({ item, onClick }) {
+  const { urls, description } = item;
   return (
     <div className={css.image_item}>
-      <img src={urls.small} alt={description} />
+      <img
+        src={urls.small}
+        alt={description}
+        onClick={() => {
+          onClick(urls.full);
+        }}
+      />
     </div>
   );
 }

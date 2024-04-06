@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {RemoveScroll} from 'react-remove-scroll';
 import Modal from "react-modal";
 
 import css from "./ImageModal.module.scss";
@@ -9,11 +9,10 @@ function ImageModal({isOpen, toogleModal, modalImage}) {
 
   function closeModal() {
     toogleModal(false);
-    document.body.style.overflow = 'unset';
   }
 
   return (
-    <>
+    <RemoveScroll>
       <Modal
         isOpen={isOpen}
         onRequestClose={closeModal}
@@ -22,7 +21,7 @@ function ImageModal({isOpen, toogleModal, modalImage}) {
       >
         <img src={modalImage} alt="" />
       </Modal>
-    </>
+    </RemoveScroll>
   );
 }
 

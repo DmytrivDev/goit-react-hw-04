@@ -7,14 +7,8 @@ function ImageGallery({ imagesArray, onClick }) {
     <div className={css.image_gallery}>
       {imagesArray.map((item) => {
         return (
-          <li
-            key={item.id}
-            onClick={() => {
-              onClick(item.urls.full);
-              document.body.style.overflow = 'hidden';
-            }}
-          >
-            <ImageCard item={item} />
+          <li key={item.id}>
+            <ImageCard item={item} onClick={onClick} />
           </li>
         );
       })}

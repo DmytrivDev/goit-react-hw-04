@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 import FetchImages from "../API/FetchImages";
 
@@ -24,18 +24,33 @@ function App() {
   const [modalIsOpen, setIsOpen] = useState(false);
   const [modalImage, setModalImage] = useState("");
 
+  const btnRef = useRef();
+
   useEffect(() => {
     const searchImages = async () => {
-      if(searchWord) {
+      if (searchWord) {
         try {
-          setIsStart(false)
+          setIsStart(false);
           setIsLoading(true);
-          setIsSearching(true);
-          const response = await FetchImages(searchWord);
-          setImagesArray(response.data.results);
-          setCurrentPage(1);
+          if (currentPage === 1) {
+            setIsSearching(true);
+          }
+          const response = await FetchImages(searchWord, currentPage);
           setTotalPages(response.data.total_pages);
-          setIsError(false);
+          if (currentPage === 1) {
+            setImagesArray(response.data.results);
+          } else {
+            setImagesArray((oldArray) => {
+              return [...oldArray, ...response.data.results];
+            });
+            setTimeout(() => {
+              window.scrollTo({
+                top: btnRef.current.offsetTop,
+                behavior: "smooth",
+              });
+            }, 100);
+            setIsError(false);
+          }
         } catch (error) {
           setIsError(true);
         } finally {
@@ -46,41 +61,25 @@ function App() {
     };
 
     searchImages();
-  }, [searchWord]);
+  }, [searchWord, currentPage]);
 
-  const nextPage = async (offsetTop) => {
-    try {
-      setIsLoading(true);
-      const newPage = currentPage + 1;
-      const response = await FetchImages(searchWord, newPage);
-      setImagesArray((prevArray) => {
-        return [...prevArray, ...response.data.results];
-      });
-      setCurrentPage(newPage);
-      setIsError(false);
-    } catch (error) {
-      setIsError(true);
-    } finally {
-      setIsLoading(false);
-
-      setTimeout(() => {
-        window.scrollTo({
-          top: offsetTop,
-          behavior: "smooth",
-        });
-      }, 100);
-    }
+  const nextPage = () => {
+    const newPage = currentPage + 1;
+    setCurrentPage(newPage);
   };
 
   useEffect(() => {
-    if(modalImage) {
+    if (modalImage) {
       setIsOpen(true);
     }
-  }, [modalImage])
+  }, [modalImage]);
 
   return (
     <>
-      <SearchBar onSubmit={setSearchWord} />
+      <SearchBar
+        onSubmit={setSearchWord}
+        onSunmitCurrentPage={setCurrentPage}
+      />
       {imagesArray.length > 0 && !isSearching && (
         <ImageGallery imagesArray={imagesArray} onClick={setModalImage} />
       )}
@@ -90,9 +89,17 @@ function App() {
       {isLoading && <Loader />}
       {isError && <ErrorMessage />}
       {totalPages > currentPage && !isSearching && (
-        <LoadMoreBtn onClick={nextPage} />
+        <div ref={btnRef} className="button_cont">
+          <LoadMoreBtn onClick={nextPage} />
+        </div>
       )}
-      <ImageModal isOpen={modalIsOpen} toogleModal={setIsOpen} modalImage={modalImage}  />
+      {modalIsOpen && modalImage && (
+        <ImageModal
+          isOpen={modalIsOpen}
+          toogleModal={setIsOpen}
+          modalImage={modalImage}
+        />
+      )}
     </>
   );
 }
