@@ -1,73 +1,99 @@
-import { useState, useEffect } from "react";
-import { nanoid } from "nanoid";
+import { useEffect, useState } from "react";
 
-import ContactForm from "./ContactForm/ContactForm";
-import SearchBox from "./SearchBox/SearchBox";
-import ContactList from "./ContactList/ContactList";
+import FetchImages from "../API/FetchImages";
+
+import SearchBar from "./SearchBar/SearchBar";
+import ImageGallery from "./ImageGallery/ImageGallery";
+import Loader from "./Loader/Loader";
+import ErrorMessage from "./ErrorMessage/ErrorMessage";
+import ImageModal from "./ImageModal/ImageModal";
+
+import LoadMoreBtn from "./LoadMoreBtn/LoadMoreBtn";
 
 import "./App.scss";
 
 function App() {
-  const defaultContacts = [
-    { id: "id-1", name: "Rosie Simpson", number: "459-12-56" },
-    { id: "id-2", name: "Hermione Kline", number: "443-89-12" },
-    { id: "id-3", name: "Eden Clements", number: "645-17-79" },
-    { id: "id-4", name: "Annie Copeland", number: "227-91-26" },
-  ];
+  const [searchWord, setSearchWord] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [imagesArray, setImagesArray] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isStart, setIsStart] = useState(true);
+  const [isError, setIsError] = useState(false);
+  const [modalIsOpen, setIsOpen] = useState(false);
+  const [modalImage, setModalImage] = useState("");
 
-  const [contacts, setContacts] = useState(() => {
-    const contactsStorage = localStorage.getItem("contactsStorage");
+  useEffect(() => {
+    const searchImages = async () => {
+      if(searchWord) {
+        try {
+          setIsStart(false)
+          setIsLoading(true);
+          setIsSearching(true);
+          const response = await FetchImages(searchWord);
+          setImagesArray(response.data.results);
+          setCurrentPage(1);
+          setTotalPages(response.data.total_pages);
+          setIsError(false);
+        } catch (error) {
+          setIsError(true);
+        } finally {
+          setIsLoading(false);
+          setIsSearching(false);
+        }
+      }
+    };
 
-    if (contactsStorage !== null) {
-      return JSON.parse(contactsStorage);
+    searchImages();
+  }, [searchWord]);
+
+  const nextPage = async (offsetTop) => {
+    try {
+      setIsLoading(true);
+      const newPage = currentPage + 1;
+      const response = await FetchImages(searchWord, newPage);
+      setImagesArray((prevArray) => {
+        return [...prevArray, ...response.data.results];
+      });
+      setCurrentPage(newPage);
+      setIsError(false);
+    } catch (error) {
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+
+      setTimeout(() => {
+        window.scrollTo({
+          top: offsetTop,
+          behavior: "smooth",
+        });
+      }, 100);
     }
-  
-    return defaultContacts;
-  });
-
-  const [search, setSearch] = useState("");
-
-  const addContact = (values) => {
-    setContacts((prevContacts) => {
-      return [
-        ...prevContacts,
-        {
-          id: nanoid(),
-          name: values.name,
-          number: values.phone,
-        },
-      ];
-    });
-  };
-
-  const deleteContact = (id) => {
-    const delatedContact = contacts.filter((contact) => contact.id !== id);
-
-    setContacts(() => {
-      return delatedContact;
-    });
   };
 
   useEffect(() => {
-    localStorage.setItem("contactsStorage", JSON.stringify(contacts));
-  }, [contacts]);
-
-  const visibleContacts = contacts.filter((contact) =>
-    contact.name.toLowerCase().includes(search.toLowerCase())
-  );
+    if(modalImage) {
+      setIsOpen(true);
+    }
+  }, [modalImage])
 
   return (
-    <div className="container">
-      <div>
-        <h1>Phonebook</h1>
-        <ContactForm onSubmit={addContact} />
-        <SearchBox search={search} onSearch={setSearch} />
-        <ContactList
-          visibleContacts={visibleContacts}
-          deleteContact={deleteContact}
-        />
-      </div>
-    </div>
+    <>
+      <SearchBar onSubmit={setSearchWord} />
+      {imagesArray.length > 0 && !isSearching && (
+        <ImageGallery imagesArray={imagesArray} onClick={setModalImage} />
+      )}
+      {imagesArray.length === 0 && !isStart && !isLoading && !isError && (
+        <div className="nothingfound">Nothing Found</div>
+      )}
+      {isLoading && <Loader />}
+      {isError && <ErrorMessage />}
+      {totalPages > currentPage && !isSearching && (
+        <LoadMoreBtn onClick={nextPage} />
+      )}
+      <ImageModal isOpen={modalIsOpen} toogleModal={setIsOpen} modalImage={modalImage}  />
+    </>
   );
 }
 

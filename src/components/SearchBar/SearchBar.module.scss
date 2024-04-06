@@ -1,0 +1,40 @@
+.searchbar_section {
+    padding: 20px;
+    background-color: blue;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+
+    form {
+        position: relative;
+        max-width: 40em;
+        width: 100%;
+
+        input {
+            height: 3em;
+            padding: 0 1em;
+            padding-left: 3em;
+            border: none;
+            width: 100%;
+            outline: none;
+        }
+
+        button {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2.5rem;
+            background-color: transparent;
+            outline: none;
+            border: none;
+            font-size: 1.25em;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            align-content: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+    }
+}
