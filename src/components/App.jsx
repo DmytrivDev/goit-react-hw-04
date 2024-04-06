@@ -23,6 +23,7 @@ function App() {
   const [isError, setIsError] = useState(false);
   const [modalIsOpen, setIsOpen] = useState(false);
   const [modalImage, setModalImage] = useState("");
+  const [scrollPos, setScrollPos] = useState(0);
 
   const btnRef = useRef();
 
@@ -36,6 +37,7 @@ function App() {
             setIsSearching(true);
           }
           const response = await FetchImages(searchWord, currentPage);
+          console.log(response.data)
           setTotalPages(response.data.total_pages);
           if (currentPage === 1) {
             setImagesArray(response.data.results);
@@ -45,7 +47,7 @@ function App() {
             });
             setTimeout(() => {
               window.scrollTo({
-                top: btnRef.current.offsetTop,
+                top: scrollPos,
                 behavior: "smooth",
               });
             }, 100);
@@ -53,6 +55,7 @@ function App() {
           }
         } catch (error) {
           setIsError(true);
+          console.log(error);
         } finally {
           setIsLoading(false);
           setIsSearching(false);
@@ -64,8 +67,12 @@ function App() {
   }, [searchWord, currentPage]);
 
   const nextPage = () => {
-    const newPage = currentPage + 1;
-    setCurrentPage(newPage);
+    if (currentPage < totalPages) {
+      const offsetTop = btnRef.current.offsetTop;
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      setScrollPos(offsetTop);
+    }
   };
 
   useEffect(() => {
