@@ -1,0 +1,31 @@
+.contactItem {
+    padding: 1em;
+    max-width: 20em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0;
+    list-style: none;
+    width: 100%;
+    background-color: #edf7fa;
+    .contactPart {
+        gap: .5em;
+        display: flex;
+        flex-direction: column;
+        .contactContact {
+            gap: .5em;
+            display: flex;
+            align-items: center;
+            align-content: center;
+            color: #000;
+        }
+        button {
+            padding: .5em 1em;
+            background-color: #da1818;
+            color: #fff;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+        }
+    }
+}
