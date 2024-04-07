@@ -13,10 +13,9 @@ import LoadMoreBtn from "./LoadMoreBtn/LoadMoreBtn";
 import "./App.scss";
 
 function App() {
-  const [searchWord, setSearchWord] = useState("");
+  const [searchWord, setSearchWord] = useState({ word: "", page: 0 });
   const [isSearching, setIsSearching] = useState(false);
   const [imagesArray, setImagesArray] = useState([]);
-  const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isStart, setIsStart] = useState(true);
@@ -29,17 +28,16 @@ function App() {
 
   useEffect(() => {
     const searchImages = async () => {
-      if (searchWord) {
+      if (searchWord.word) {
         try {
           setIsStart(false);
           setIsLoading(true);
-          if (currentPage === 1) {
+          if (searchWord.page === 1) {
             setIsSearching(true);
           }
-          const response = await FetchImages(searchWord, currentPage);
-          console.log(response.data)
+          const response = await FetchImages(searchWord.word, searchWord.page);
           setTotalPages(response.data.total_pages);
-          if (currentPage === 1) {
+          if (searchWord.page === 1) {
             setImagesArray(response.data.results);
           } else {
             setImagesArray((oldArray) => {
@@ -55,7 +53,6 @@ function App() {
           }
         } catch (error) {
           setIsError(true);
-          console.log(error);
         } finally {
           setIsLoading(false);
           setIsSearching(false);
@@ -64,13 +61,18 @@ function App() {
     };
 
     searchImages();
-  }, [searchWord, currentPage]);
+  }, [searchWord]);
 
   const nextPage = () => {
-    if (currentPage < totalPages) {
+    if (searchWord.page < totalPages) {
       const offsetTop = btnRef.current.offsetTop;
-      const newPage = currentPage + 1;
-      setCurrentPage(newPage);
+      const newPage = searchWord.page + 1;
+      setSearchWord((prevSearchWord) => {
+        return {
+          ...prevSearchWord,
+          page: newPage,
+        };
+      });
       setScrollPos(offsetTop);
     }
   };
@@ -83,10 +85,7 @@ function App() {
 
   return (
     <>
-      <SearchBar
-        onSubmit={setSearchWord}
-        onSunmitCurrentPage={setCurrentPage}
-      />
+      <SearchBar onSubmit={setSearchWord} />
       {imagesArray.length > 0 && !isSearching && (
         <ImageGallery imagesArray={imagesArray} onClick={setModalImage} />
       )}
@@ -95,7 +94,7 @@ function App() {
       )}
       {isLoading && <Loader />}
       {isError && <ErrorMessage />}
-      {totalPages > currentPage && !isSearching && (
+      {totalPages > searchWord.page && !isSearching && (
         <div ref={btnRef} className="button_cont">
           <LoadMoreBtn onClick={nextPage} />
         </div>
@@ -104,6 +103,7 @@ function App() {
         <ImageModal
           isOpen={modalIsOpen}
           toogleModal={setIsOpen}
+          clearModal={setModalImage}
           modalImage={modalImage}
         />
       )}

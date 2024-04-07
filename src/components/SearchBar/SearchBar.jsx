@@ -3,14 +3,13 @@ import toast, { Toaster } from "react-hot-toast";
 
 import css from "./SearchBar.module.scss";
 
-function SearchBar({ onSubmit, onSunmitCurrentPage }) {
+function SearchBar({ onSubmit }) {
   const hendleSubmit = (evt) => {
     evt.preventDefault();
     const serchedWord = evt.target.elements.searchInput.value;
 
-    if (serchedWord) {
-      onSubmit(serchedWord);
-      onSunmitCurrentPage(1);
+    if (serchedWord && onSubmit) {
+      onSubmit({ word: serchedWord, page: 1 });
       evt.target.reset();
     } else {
       toast.error("Search field is empty", {

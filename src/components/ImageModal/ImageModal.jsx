@@ -5,10 +5,11 @@ import css from "./ImageModal.module.scss";
 
 Modal.setAppElement("#root");
 
-function ImageModal({isOpen, toogleModal, modalImage}) {
+function ImageModal({isOpen, toogleModal, modalImage, clearModal}) {
 
   function closeModal() {
     toogleModal(false);
+    clearModal("");
   }
 
   return (
