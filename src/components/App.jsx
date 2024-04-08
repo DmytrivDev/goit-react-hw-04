@@ -13,14 +13,15 @@ import LoadMoreBtn from "./LoadMoreBtn/LoadMoreBtn";
 import "./App.scss";
 
 function App() {
-  const [searchWord, setSearchWord] = useState({ word: "", page: 0 });
+  const [searchWord, setSearchWord] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [isSearching, setIsSearching] = useState(false);
   const [imagesArray, setImagesArray] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isStart, setIsStart] = useState(true);
   const [isError, setIsError] = useState(false);
-  const [modalIsOpen, setIsOpen] = useState(false);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
   const [modalImage, setModalImage] = useState("");
   const [scrollPos, setScrollPos] = useState(0);
 
@@ -28,16 +29,16 @@ function App() {
 
   useEffect(() => {
     const searchImages = async () => {
-      if (searchWord.word) {
+      if (searchWord) {
         try {
           setIsStart(false);
           setIsLoading(true);
-          if (searchWord.page === 1) {
+          if (currentPage === 1) {
             setIsSearching(true);
           }
-          const response = await FetchImages(searchWord.word, searchWord.page);
+          const response = await FetchImages(searchWord, currentPage);
           setTotalPages(response.data.total_pages);
-          if (searchWord.page === 1) {
+          if (currentPage === 1) {
             setImagesArray(response.data.results);
           } else {
             setImagesArray((oldArray) => {
@@ -61,40 +62,39 @@ function App() {
     };
 
     searchImages();
-  }, [searchWord]);
+  }, [searchWord, currentPage]);
 
   const nextPage = () => {
-    if (searchWord.page < totalPages) {
+    if (currentPage < totalPages) {
       const offsetTop = btnRef.current.offsetTop;
-      const newPage = searchWord.page + 1;
-      setSearchWord((prevSearchWord) => {
-        return {
-          ...prevSearchWord,
-          page: newPage,
-        };
-      });
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
       setScrollPos(offsetTop);
     }
   };
 
-  useEffect(() => {
-    if (modalImage) {
-      setIsOpen(true);
-    }
-  }, [modalImage]);
+  const hendleSearch = (searchedWord) => {
+    setSearchWord(searchedWord);
+    setCurrentPage(1);
+  };
+
+  const hendleTogglePopup = (imageSrc) => {
+    setModalImage(imageSrc);
+    setModalIsOpen(!modalIsOpen);
+  };
 
   return (
     <>
-      <SearchBar onSubmit={setSearchWord} />
+      <SearchBar onSubmit={hendleSearch} />
       {imagesArray.length > 0 && !isSearching && (
-        <ImageGallery imagesArray={imagesArray} onClick={setModalImage} />
+        <ImageGallery imagesArray={imagesArray} onClick={hendleTogglePopup} />
       )}
       {imagesArray.length === 0 && !isStart && !isLoading && !isError && (
         <div className="nothingfound">Nothing Found</div>
       )}
       {isLoading && <Loader />}
       {isError && <ErrorMessage />}
-      {totalPages > searchWord.page && !isSearching && (
+      {totalPages > currentPage && !isSearching && (
         <div ref={btnRef} className="button_cont">
           <LoadMoreBtn onClick={nextPage} />
         </div>
@@ -102,8 +102,7 @@ function App() {
       {modalIsOpen && modalImage && (
         <ImageModal
           isOpen={modalIsOpen}
-          toogleModal={setIsOpen}
-          clearModal={setModalImage}
+          toogleModal={hendleTogglePopup}
           modalImage={modalImage}
         />
       )}

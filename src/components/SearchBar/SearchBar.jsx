@@ -9,7 +9,7 @@ function SearchBar({ onSubmit }) {
     const serchedWord = evt.target.elements.searchInput.value;
 
     if (serchedWord && onSubmit) {
-      onSubmit({ word: serchedWord, page: 1 });
+      onSubmit(serchedWord);
       evt.target.reset();
     } else {
       toast.error("Search field is empty", {
